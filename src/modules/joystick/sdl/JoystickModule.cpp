@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -93,6 +93,16 @@ int JoystickModule::getIndex(const love::joystick::Joystick *joystick)
 int JoystickModule::getJoystickCount() const
 {
 	return (int) activeSticks.size();
+}
+
+void JoystickModule::setBackgroundEvents(bool enable)
+{
+	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, enable ? "1" : "0");
+}
+
+bool JoystickModule::hasBackgroundEvents() const
+{
+	return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, false);
 }
 
 love::joystick::Joystick *JoystickModule::getJoystickFromID(int instanceid)

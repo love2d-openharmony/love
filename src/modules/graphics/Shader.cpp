@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -151,14 +151,17 @@ float Texel(sampler2DArrayShadow s, highp vec4 c) { return texture(s, c); }
 uniform mediump float deprecatedTextureCall;
 
 vec4 texture2DDeprecated(sampler2D s, vec2 c) { return texture(s, c) + deprecatedTextureCall; }
+vec4 texture3DDeprecated(sampler3D s, vec3 c) { return texture(s, c) + deprecatedTextureCall; }
 vec4 textureCubeDeprecated(samplerCube s, vec3 c) { return texture(s, c) + deprecatedTextureCall; }
 
 #ifdef PIXEL
 vec4 texture2DDeprecated(sampler2D s, vec2 c, float b) { return texture(s, c, b) + deprecatedTextureCall; }
+vec4 texture3DDeprecated(sampler3D s, vec3 c, float b) { return texture(s, c, b) + deprecatedTextureCall; }
 vec4 textureCubeDeprecated(samplerCube s, vec3 c, float b) { return texture(s, c, b) + deprecatedTextureCall; }
 #endif
 
 #define texture2D texture2DDeprecated
+#define texture3D texture3DDeprecated
 #define textureCube textureCubeDeprecated
 
 float gammaToLinearPrecise(float c) {

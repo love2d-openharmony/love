@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -51,6 +51,9 @@ public:
 	love::joystick::Joystick *getJoystick(int joyindex) override;
 	int getIndex(const love::joystick::Joystick *joystick) override;
 	int getJoystickCount() const override;
+
+	void setBackgroundEvents(bool enable) override;
+	bool hasBackgroundEvents() const override;
 
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput) override;
 	void loadGamepadMappings(const std::string &mappings) override;

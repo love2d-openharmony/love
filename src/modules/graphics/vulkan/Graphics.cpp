@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,7 @@
 
 #include <SDL3/SDL_vulkan.h>
 #include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_init.h>
 
 #include <algorithm>
 #include <vector>
@@ -95,6 +96,10 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 Graphics::Graphics()
 	: love::graphics::Graphics("love.graphics.vulkan")
 {
+	// Needed for SDL_Vulkan_LoadLibrary, if graphics is loaded before the window.
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
+
 	if (!SDL_Vulkan_LoadLibrary(nullptr))
 		throw love::Exception("could not find vulkan");
 
@@ -192,6 +197,7 @@ Graphics::~Graphics()
 	vkDestroyInstance(instance, nullptr);
 
 	SDL_Vulkan_UnloadLibrary();
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 // START OVERRIDEN FUNCTIONS
@@ -431,13 +437,6 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 
 	endRecordingGraphicsCommands();
 
-	if (!imagesInFlight.empty())
-	{
-		if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-			vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
-		imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-	}
-
 	std::array<VkCommandBuffer, 1> submitCommandbuffers = { commandBuffers.at(currentFrame) };
 
 	VkSubmitInfo submitInfo{};
@@ -457,7 +456,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	submitInfo.commandBufferCount = static_cast<uint32_t>(submitCommandbuffers.size());
 	submitInfo.pCommandBuffers = submitCommandbuffers.data();
 
-	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores.at(currentFrame) };
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores.at(imageIndex) };
 
 	VkFence fence = VK_NULL_HANDLE;
 
@@ -469,7 +468,6 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			submitInfo.pSignalSemaphores = signalSemaphores;
 		}
 
-		vkResetFences(device, 1, &inFlightFences[currentFrame]);
 		fence = inFlightFences[currentFrame];
 	}
 
@@ -572,7 +570,7 @@ void Graphics::present(void *screenshotCallbackdata)
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(currentFrame);
+		presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(imageIndex);
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &swapChain;
 		presentInfo.pImageIndices = &imageIndex;
@@ -1383,6 +1381,8 @@ void Graphics::beginSwapChainFrame()
 	{
 		imageRequested = false;
 	}
+	
+	vkResetFences(device, 1, &inFlightFences.at(currentFrame));
 
 	startRecordingGraphicsCommands();
 
@@ -1469,9 +1469,11 @@ void Graphics::startRecordingGraphicsCommands()
 	}
 
 	// Update the pending render pass state with current backbuffer data if no RT is active.
-	// If one is active, the state shouldn't need updating.
+	// If one is active, the state (aside from the active pipeline) shouldn't need updating.
 	if (!isRenderTargetActive())
 		setDefaultRenderPass();
+	else
+		renderPassState.pipeline = VK_NULL_HANDLE;
 
 	if (defaultVertexBuffer)
 	{
@@ -3374,9 +3376,7 @@ void Graphics::createCommandBuffers()
 void Graphics::createSyncObjects()
 {
 	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-	imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
 
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -3386,10 +3386,18 @@ void Graphics::createSyncObjects()
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
 		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores.at(i)) != VK_SUCCESS ||
-			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores.at(i)) != VK_SUCCESS ||
 			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences.at(i)) != VK_SUCCESS)
 			throw love::Exception("Failed to create Vulkan synchronization objects for a frame!");
+	}
+
+	renderFinishedSemaphores.resize(swapChainImages.size());
+	for (size_t i = 0; i < swapChainImages.size(); i++)
+	{
+		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores.at(i)) != VK_SUCCESS)
+			throw love::Exception("Failed to create image available semaphore");
+	}
 }
 
 void Graphics::cleanup()

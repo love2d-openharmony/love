@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 
 // LOVE
 #include "graphics/GraphicsReadback.h"
+#include "graphics/Volatile.h"
 #include "FenceSync.h"
 #include "common/math.h"
 
@@ -32,7 +33,7 @@ namespace graphics
 namespace opengl
 {
 
-class GraphicsReadback final : public love::graphics::GraphicsReadback
+class GraphicsReadback final : public love::graphics::GraphicsReadback, public Volatile
 {
 public:
 
@@ -42,6 +43,9 @@ public:
 
 	void wait() override;
 	void update() override;
+
+	bool loadVolatile() override;
+	void unloadVolatile() override;
 
 private:
 

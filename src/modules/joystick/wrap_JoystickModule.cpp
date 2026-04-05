@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -62,6 +62,18 @@ int w_getIndex(lua_State *L)
 int w_getJoystickCount(lua_State *L)
 {
 	lua_pushinteger(L, instance()->getJoystickCount());
+	return 1;
+}
+
+int w_setBackgroundEvents(lua_State *L)
+{
+	instance()->setBackgroundEvents(luax_checkboolean(L, 1));
+	return 0;
+}
+
+int w_hasBackgroundEvents(lua_State *L)
+{
+	luax_pushboolean(L, instance()->hasBackgroundEvents());
 	return 1;
 }
 
@@ -176,6 +188,8 @@ static const luaL_Reg functions[] =
 {
 	{ "getJoysticks", w_getJoysticks },
 	{ "getJoystickCount", w_getJoystickCount },
+	{ "setBackgroundEvents", w_setBackgroundEvents },
+	{ "hasBackgroundEvents", w_hasBackgroundEvents },
 	{ "setGamepadMapping", w_setGamepadMapping },
 	{ "loadGamepadMappings", w_loadGamepadMappings },
 	{ "saveGamepadMappings", w_saveGamepadMappings },

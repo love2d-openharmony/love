@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -69,6 +69,16 @@ public:
 	 * Gets the number of currently connected Joysticks.
 	 **/
 	virtual int getJoystickCount() const = 0;
+
+	/**
+	 * Sets whether joystick input events are produced while the app doesn't have focus.
+	 **/
+	virtual void setBackgroundEvents(bool enable) = 0;
+
+	/**
+	 * Gets whether joystick input events are produced while the app doesn't have focus.
+	 **/
+	virtual bool hasBackgroundEvents() const = 0;
 
 	/**
 	 * Sets the virtual Gamepad mapping for a joystick input value for all

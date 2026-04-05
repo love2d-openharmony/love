@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2025 LOVE Development Team
+ * Copyright (c) 2006-2026 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -1602,7 +1602,7 @@ int w_newShader(lua_State *L)
 	{
 		Shader *shader = instance()->newShader(stages, options);
 		if (shader->isUsingDeprecatedTextureFunctions())
-			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
+			luax_markdeprecated(L, 1, "texture2D() or texture3D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
 		if (shader->isUsingDeprecatedTextureUniform())
 			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
 		if (!shader->getUnsetVertexInputLocationsString().empty())
@@ -1640,7 +1640,7 @@ int w_newComputeShader(lua_State* L)
 	{
 		Shader *shader = instance()->newComputeShader(stages[0], options);
 		if (shader->isUsingDeprecatedTextureFunctions())
-			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
+			luax_markdeprecated(L, 1, "texture2D() or texture3D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
 		if (shader->isUsingDeprecatedTextureUniform())
 			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
 		if (!shader->getUnsetVertexInputLocationsString().empty())
@@ -2395,6 +2395,8 @@ int w_readbackTexture(lua_State *L)
 	int slice = 0;
 	if (t->getTextureType() != TEXTURE_2D)
 		slice = (int) luaL_checkinteger(L, 2) - 1;
+	else if (!lua_isnoneornil(L, 2) && lua_type(L, 2) != LUA_TNUMBER)
+		luaL_argerror(L, 2, "number or nil expected");
 
 	int mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
 
@@ -2433,6 +2435,8 @@ int w_readbackTextureAsync(lua_State *L)
 	int slice = 0;
 	if (t->getTextureType() != TEXTURE_2D)
 		slice = (int) luaL_checkinteger(L, 2) - 1;
+	else if (!lua_isnoneornil(L, 2) && lua_type(L, 2) != LUA_TNUMBER)
+		luaL_argerror(L, 2, "number or nil expected");
 
 	int mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
 
