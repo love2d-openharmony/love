@@ -21,7 +21,7 @@
 #ifndef LOVE_CONFIG_H
 #define LOVE_CONFIG_H
 
- // Platform stuff.
+// Platform stuff.
 #if defined(WIN32) || defined(_WIN32)
 #	define LOVE_WINDOWS 1
 #	include <winapifamily.h>
