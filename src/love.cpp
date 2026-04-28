@@ -334,9 +334,4 @@ int main(int argc, char **argv)
 	return retval;
 }
 
-extern "C" LOVE_EXPORT int love_run(int argc, char **argv)
-{
-	return main(argc, argv);
-}
-
 #endif // LOVE_BUILD_EXE
