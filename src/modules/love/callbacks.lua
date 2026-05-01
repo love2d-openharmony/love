@@ -29,6 +29,15 @@ function love.createhandlers()
 	-- Standard callback handlers.
 	love.handlers = setmetatable({
 		keypressed = function (b,s,r)
+			if b == "appback" or s == "acback" then
+				if love.keypressed and love.keypressed(b,s,r) then
+					return true
+				end
+				if love.event then
+					love.event.quit()
+				end
+				return true
+			end
 			if love.keypressed then return love.keypressed(b,s,r) end
 		end,
 		keyreleased = function (b,s)
