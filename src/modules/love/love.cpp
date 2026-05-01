@@ -36,9 +36,9 @@
 #include <windows.h>
 #endif // LOVE_WINDOWS
 
-#ifdef LOVE_ANDROID
+#if defined(LOVE_ANDROID) || defined(LOVE_OHOS)
 #include <SDL3/SDL.h>
-#endif // LOVE_ANDROID
+#endif // LOVE_ANDROID || LOVE_OHOS
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 #include <fcntl.h>
@@ -610,7 +610,13 @@ int luaopen_love(lua_State *L)
 	lua_setfield(L, -2, "isVersionCompatible");
 
 #ifdef LOVE_ENABLE_SYSTEM
-	lua_pushstring(L, love::system::System::getOS());
+	{
+		const char *os = love::system::System::getOS();
+#if defined(LOVE_ANDROID) || defined(LOVE_OHOS)
+		SDL_Log("LOVE bootstrap os=%s SDL_GetPlatform=%s", os, SDL_GetPlatform());
+#endif
+		lua_pushstring(L, os);
+	}
 #else
 	lua_pushstring(L, "Unknown");
 #endif
