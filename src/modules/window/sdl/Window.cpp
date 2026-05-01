@@ -957,7 +957,7 @@ void Window::getDesktopDimensions(int displayindex, int &width, int &height) con
 	}
 }
 
-void Window::setPosition(int x, int y, int displayindex)
+void Window::setPosition(int x, int y, int displayindex, bool waitForSync)
 {
 	if (!window)
 		return;
@@ -974,7 +974,8 @@ void Window::setPosition(int x, int y, int displayindex)
 	y += displaybounds.y;
 
 	SDL_SetWindowPosition(window, x, y);
-	SDL_SyncWindow(window);
+	if (waitForSync)
+		SDL_SyncWindow(window);
 
 	settings.useposition = true;
 }

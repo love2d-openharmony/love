@@ -1954,10 +1954,11 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 
 	bool shouldflush = false;
 	bool shouldresize = false;
+	bool indexeddraw = cmd.indexMode != TRIANGLEINDEX_NONE;
 
 	if (cmd.primitiveMode != state.primitiveMode
 		|| cmd.formats[0] != state.formats[0] || cmd.formats[1] != state.formats[1]
-		|| ((cmd.indexMode != TRIANGLEINDEX_NONE) != (state.indexCount > 0))
+		|| indexeddraw != state.indexedDraw
 		|| cmd.texture != state.texture
 		|| cmd.standardShaderType != state.standardShaderType)
 	{
@@ -1967,7 +1968,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 	int totalvertices = state.vertexCount + cmd.vertexCount;
 
 	// We only support uint16 index buffers for now.
-	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TRIANGLEINDEX_NONE)
+	if (totalvertices > LOVE_UINT16_MAX && indexeddraw)
 		shouldflush = true;
 
 	int reqIndexCount = getIndexCount(cmd.indexMode, cmd.vertexCount);
@@ -1996,7 +1997,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		newdatasizes[i] = stride * cmd.vertexCount;
 	}
 
-	if (cmd.indexMode != TRIANGLEINDEX_NONE)
+	if (indexeddraw)
 	{
 		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
 
@@ -2015,6 +2016,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		flushBatchedDraws();
 
 		state.primitiveMode = cmd.primitiveMode;
+		state.indexedDraw = indexeddraw;
 		state.formats[0] = cmd.formats[0];
 		state.formats[1] = cmd.formats[1];
 		state.texture = cmd.texture;
@@ -2048,7 +2050,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		}
 	}
 
-	if (cmd.indexMode != TRIANGLEINDEX_NONE)
+	if (indexeddraw)
 	{
 		if (state.indexBufferMap.data == nullptr)
 			state.indexBufferMap = state.indexBuffer->map(reqIndexSize);
@@ -2129,7 +2131,7 @@ void Graphics::flushBatchedDraws()
 
 	pushIdentityTransform();
 
-	if (sbstate.indexCount > 0)
+	if (sbstate.indexedDraw)
 	{
 		usedsizes[2] = sizeof(uint16) * sbstate.indexCount;
 

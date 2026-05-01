@@ -189,7 +189,7 @@ public:
 
 	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
 
-	virtual void setPosition(int x, int y, int displayindex) = 0;
+	virtual void setPosition(int x, int y, int displayindex, bool waitForSync) = 0;
 	virtual void getPosition(int &x, int &y, int &displayindex) = 0;
 
 	virtual Rect getSafeArea() const = 0;

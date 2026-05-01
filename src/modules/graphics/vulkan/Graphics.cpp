@@ -2036,6 +2036,17 @@ void Graphics::createSwapChain()
 		VkSwapchainKHR newSwapChain = VK_NULL_HANDLE;
 		VkResult result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &newSwapChain);
 
+		// Maybe work around older driver bugs when passing in an old swapchain:
+		// https://github.com/love2d/love/issues/2244
+		// https://community.khronos.org/t/handling-vk-error-initialization-failed-in-vkcreateswapchainkhr-on-window-resize/110916
+		if (result == VK_ERROR_INITIALIZATION_FAILED && swapChain != VK_NULL_HANDLE)
+		{
+			vkDestroySwapchainKHR(device, swapChain, nullptr);
+			swapChain = VK_NULL_HANDLE;
+			createInfo.oldSwapchain = VK_NULL_HANDLE;
+			result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &newSwapChain);
+		}
+
 		if (result != VK_SUCCESS)
 			throw love::Exception("Failed to create Vulkan swap chain: %s", Vulkan::getErrorString(result));
 

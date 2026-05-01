@@ -111,7 +111,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 	if (settings.zeroInitialize && data == nullptr && GLAD_VERSION_4_3)
 	{
 		gl.bindBuffer(mapUsage, buffer);
-		glClearBufferData(target, GL_R8UI, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+		glClearBufferData(target, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
 	}
 }
 
@@ -300,7 +300,7 @@ void Buffer::clearInternal(size_t offset, size_t size)
 	if (GLAD_VERSION_4_3)
 	{
 		gl.bindBuffer(mapUsage, buffer);
-		glClearBufferSubData(target, GL_R8UI, offset, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+		glClearBufferSubData(target, GL_R8UI, offset, size, GL_RED_INTEGER, GL_UNSIGNED_BYTE, nullptr);
 	}
 	else
 	{

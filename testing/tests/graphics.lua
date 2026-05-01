@@ -2674,6 +2674,31 @@ love.test.graphics.translate = function(test)
 end
 
 
+-- love.graphics.resetProjection
+love.test.graphics.resetProjection = function(test)
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.origin()
+    -- draw red pixel at (0, 4) using default projection
+    love.graphics.setColor(1, 0, 0, 1)
+    love.graphics.rectangle('fill', 0, 4, 1, 1)
+    love.graphics.setProjection("row", 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)
+    -- draw a green pixel at that should not show on screen after projection.
+    -- if setProjection doesn't affect it, the green pixel will show and fail
+    -- the test.
+    love.graphics.setColor(0, 1, 0, 1)
+    love.graphics.rectangle('fill', 2, 2, 1, 1)
+    -- draw a blue pixel at (8, 8) after resetting projection
+    love.graphics.resetProjection()
+    love.graphics.setColor(0, 0, 1, 1)
+    love.graphics.rectangle('fill', 8, 8, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas)
+  test:compareImg(imgdata)
+end
+
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -------------------------------------WINDOW-------------------------------------

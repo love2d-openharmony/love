@@ -66,7 +66,7 @@ public:
 
 	void getDesktopDimensions(int displayindex, int &width, int &height) const override;
 
-	void setPosition(int x, int y, int displayindex) override;
+	void setPosition(int x, int y, int displayindex, bool waitForSync) override;
 	void getPosition(int &x, int &y, int &displayindex) override;
 
 	Rect getSafeArea() const override;

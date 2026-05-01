@@ -957,6 +957,14 @@ int extloader(lua_State *L)
 		}
 	}
 
+	// Match Lua 5.1 and 5.2 functionality https://www.lua.org/manual/5.1/manual.html#pdf-package.loaders
+	// "if the module name has a hyphen, its prefix up to (and including) the first hyphen is removed."
+	size_t hyphen = tokenized_function.find('-');
+	if (hyphen != std::string::npos)
+		tokenized_function = tokenized_function.erase(0, hyphen + 1);
+
+	std::string filepath;
+
 	SDL_SharedObject *handle = nullptr;
 	auto *inst = instance();
 
@@ -964,15 +972,15 @@ int extloader(lua_State *L)
 
 #ifdef LOVE_ANDROID
 	// Specifically Android, look the library path based on getCRequirePath first
-	std::string androidPath(love::android::getCRequirePath());
+	filepath = love::android::getCRequirePath();
 
-	if (!androidPath.empty())
+	if (!filepath.empty())
 	{
 		// Replace ? with just the dotted filename (not tokenized_name)
-		replaceAll(androidPath, "?", filename);
+		replaceAll(filepath, "?", filename);
 
 		// Load directly, don't check for existence.
-		handle = SDL_LoadObject(androidPath.c_str());
+		handle = SDL_LoadObject(filepath.c_str());
 	}
 
 	if (!handle)
@@ -997,7 +1005,7 @@ int extloader(lua_State *L)
 				continue;
 
 			// Now resolve the full path, as we're bypassing physfs for the next part.
-			std::string filepath = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
+			filepath = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
 
 			handle = SDL_LoadObject(filepath.c_str());
 			// Can fail, for instance if it turned out the source was a zip
@@ -1023,14 +1031,17 @@ int extloader(lua_State *L)
 
 	// We look for both loveopen_ and luaopen_, so libraries with specific love support
 	// can tell when they've been loaded by love.
-	SDL_FunctionPointer func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
+	std::string lovefunc = "loveopen_" + tokenized_function;
+	std::string luafunc = "luaopen_" + tokenized_function;
+	SDL_FunctionPointer func = SDL_LoadFunction(handle, lovefunc.c_str());
 	if (!func)
-		func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
+		func = SDL_LoadFunction(handle, luafunc.c_str());
 
 	if (!func)
 	{
 		SDL_UnloadObject(handle);
-		lua_pushfstring(L, "\n\tC library '%s' is incompatible.", tokenized_name.c_str());
+		lua_pushfstring(L, "\n\tLOVE loaded C library at path %s but could not load C function %s or %s.",
+			filepath.c_str(), lovefunc.c_str(), luafunc.c_str());
 		return 1;
 	}
 

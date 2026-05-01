@@ -974,6 +974,7 @@ protected:
 		StreamBuffer *indexBuffer = nullptr;
 
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
+		bool indexedDraw = false;
 		CommonFormat formats[2] = {};
 		StrongRef<Texture> texture;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;

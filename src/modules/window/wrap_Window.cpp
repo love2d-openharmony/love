@@ -384,8 +384,9 @@ int w_setPosition(lua_State *L)
 		int x_unused, y_unused;
 		instance()->getPosition(x_unused, y_unused, displayindex);
 	}
+	bool waitForSync = luax_optboolean(L, 4, true);
 
-	instance()->setPosition(x, y, displayindex);
+	instance()->setPosition(x, y, displayindex, waitForSync);
 	return 0;
 }
 
