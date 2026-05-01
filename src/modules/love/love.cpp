@@ -38,7 +38,7 @@
 
 #if defined(LOVE_ANDROID) || defined(LOVE_OHOS)
 #include <SDL3/SDL.h>
-#endif // LOVE_ANDROID || LOVE_OHOS
+#endif // LOVE_ANDROID
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 #include <fcntl.h>
