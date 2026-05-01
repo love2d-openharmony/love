@@ -14,6 +14,8 @@ namespace ohos
 
 static std::string g_sandboxPath;
 static std::string g_gameResourcePath;
+static VibrateCallback g_vibrate = nullptr;
+static HasBackgroundMusicCallback g_hasBackgroundMusic = nullptr;
 
 static bool directoryExists(const char *path)
 {
@@ -48,6 +50,23 @@ void setGameResourcePath(const char *path)
 const std::string &getGameResourcePath()
 {
 	return g_gameResourcePath;
+}
+
+void setSystemCallbacks(VibrateCallback vibrate, HasBackgroundMusicCallback hasBackgroundMusic)
+{
+	g_vibrate = vibrate;
+	g_hasBackgroundMusic = hasBackgroundMusic;
+}
+
+void vibrate(double seconds)
+{
+	if (g_vibrate != nullptr)
+		g_vibrate(seconds);
+}
+
+bool hasBackgroundMusic()
+{
+	return g_hasBackgroundMusic != nullptr && g_hasBackgroundMusic();
 }
 
 bool createStorageDirectories()

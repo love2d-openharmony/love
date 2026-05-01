@@ -26,6 +26,8 @@
 #include "common/ios.h"
 #elif defined(LOVE_ANDROID)
 #include "common/android.h"
+#elif defined(LOVE_OHOS)
+#include "common/ohos.h"
 #endif
 
 namespace love
@@ -66,7 +68,7 @@ void System::vibrate(double seconds) const
 #elif defined(LOVE_IOS)
 	love::ios::vibrate();
 #elif defined(LOVE_OHOS)
-	LOVE_UNUSED(seconds);
+	love::ohos::vibrate(seconds);
 #else
 	LOVE_UNUSED(seconds);
 #endif
@@ -79,7 +81,7 @@ bool System::hasBackgroundMusic() const
 #elif defined(LOVE_IOS)
 	return love::ios::hasBackgroundMusic();
 #elif defined(LOVE_OHOS)
-	return false;
+	return love::ohos::hasBackgroundMusic();
 #else
 	return false;
 #endif
