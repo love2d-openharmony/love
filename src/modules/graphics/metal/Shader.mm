@@ -326,10 +326,13 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 		UniformInfo &u = *(uniformit->second);
 		u.active = true;
 
-		if (u.dataSize > 0)
+		if (u.dataSizeAllocated > 0)
 			continue;
 
-		u.dataSize = membersize;
+		// get_declared_struct_member_size should be the padded size, which can be larger than
+		// the tightly packed size that external code will use with UniformInfo.
+		u.dataSizeAllocated = membersize;
+		u.dataSizePacked = getUniformDataSizePacked(u);
 		u.data = localUniformStagingData + offset;
 
 		const auto &reflectionit = reflection.localUniformInitializerValues.find(u.name);
@@ -337,7 +340,7 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 		{
 			const auto &values = reflectionit->second;
 			if (!values.empty())
-				memcpy(u.data, values.data(), std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
+				memcpy(u.data, values.data(), std::min(u.dataSizePacked, values.size() * sizeof(LocalUniformValue)));
 		}
 
 		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
@@ -742,7 +745,7 @@ const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 
 void Shader::updateUniform(const UniformInfo *info, int count)
 {
-	if (info->dataSize == 0)
+	if (info->dataSizePacked == 0)
 		return;
 
 	if (current == this)

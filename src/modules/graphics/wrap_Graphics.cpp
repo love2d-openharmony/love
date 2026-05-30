@@ -1789,7 +1789,7 @@ static void luax_checkbufferformat(lua_State *L, int idx, const Buffer::Settings
 		return;
 	}
 
-	bool requirelocation = (settings.usageFlags & BUFFERUSAGE_VERTEX) != 0;
+	bool requirelocation = (settings.usageFlags & BUFFERUSAGEFLAG_VERTEX) != 0;
 
 	luaL_checktype(L, idx, LUA_TTABLE);
 	int tablelen = luax_objlen(L, idx);

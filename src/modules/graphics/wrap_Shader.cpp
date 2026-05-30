@@ -371,7 +371,7 @@ static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const S
 	else if ((size_t) offset >= size)
 		return luaL_error(L, "Offset must be less than the size of the Data.");
 
-	size_t uniformstride = info->dataSize / info->count;
+	size_t uniformstride = info->dataSizePacked / info->count;
 
 	if (!lua_isnoneornil(L, startidx + 2))
 	{
@@ -382,7 +382,7 @@ static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const S
 			return luaL_error(L, "Size and offset must fit within the Data's bounds.");
 		else if (sizearg % uniformstride != 0)
 			return luaL_error(L, "Size (%d) must be a multiple of the uniform's size in bytes (%d).", sizearg, uniformstride);
-		else if ((size_t) sizearg > info->dataSize)
+		else if ((size_t) sizearg > info->dataSizePacked)
 			return luaL_error(L, "Size must not be greater than the uniform's total size in bytes.");
 
 		size = (size_t) sizearg;
@@ -390,7 +390,7 @@ static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const S
 	else
 	{
 		size -= offset;
-		size = std::min((size / uniformstride) * uniformstride, info->dataSize);
+		size = std::min((size / uniformstride) * uniformstride, info->dataSizePacked);
 	}
 
 	if (size == 0)

@@ -1701,6 +1701,14 @@ std::string Shader::canonicaliizeUniformName(const std::string &n)
 	return name;
 }
 
+size_t Shader::getUniformDataSizePacked(const UniformInfo &u)
+{
+	if (u.baseType == UNIFORM_MATRIX)
+		return sizeof(uint32) * u.matrix.rows * u.matrix.columns * u.count;
+	else
+		return sizeof(uint32) * u.components * u.count;
+}
+
 void Shader::handleUnknownUniformName(const char */*name*/)
 {
 	// TODO: do something here?
@@ -1717,7 +1725,7 @@ void Shader::copyToUniformBuffer(const UniformInfo *info, const void *src, void 
 	// Assuming std140 packing rules, the source data can only be direct-copied
 	// to the uniform buffer in certain cases because it's tightly packed whereas
 	// the buffer's data isn't.
-	if (elementsize * info->count == info->dataSize || (count == 1 && info->baseType != UNIFORM_MATRIX))
+	if (elementsize * info->count == info->dataSizeAllocated || (count == 1 && info->baseType != UNIFORM_MATRIX))
 	{
 		memcpy(dst, src, elementsize * count);
 	}

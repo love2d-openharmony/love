@@ -169,7 +169,8 @@ public:
 			unsigned int *uints;
 		};
 
-		size_t dataSize;
+		size_t dataSizeAllocated;
+		size_t dataSizePacked;
 	};
 
 	union LocalUniformValue
@@ -328,6 +329,7 @@ protected:
 	void flushBatchedDraws() const;
 
 	static std::string canonicaliizeUniformName(const std::string &name);
+	static size_t getUniformDataSizePacked(const UniformInfo &u);
 	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, Reflection &reflection);
 	static DataBaseType getDataBaseType(PixelFormat format);
 	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);

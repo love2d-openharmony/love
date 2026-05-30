@@ -853,7 +853,6 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 	newsettings.fullscreen = fullscreen;
 	newsettings.fstype = fstype;
 
-	bool sdlflags = fullscreen;
 	if (fullscreen)
 	{
 		if (fstype == FULLSCREEN_DESKTOP)
@@ -861,9 +860,11 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 		else
 		{
 			SDL_DisplayID displayid = SDL_GetDisplayForWindow(window);
-			SDL_DisplayMode mode = {};
-			if (SDL_GetClosestFullscreenDisplayMode(displayid, windowWidth, windowHeight, 0, isHighDPIAllowed(), &mode))
-				SDL_SetWindowFullscreenMode(window, &mode);
+			const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(displayid);
+			if (mode != nullptr)
+				SDL_SetWindowFullscreenMode(window, mode);
+			else
+				return false;
 		}
 	}
 
@@ -871,7 +872,7 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 	love::android::setImmersive(fullscreen);
 #endif
 
-	if (SDL_SetWindowFullscreen(window, sdlflags))
+	if (SDL_SetWindowFullscreen(window, fullscreen))
 	{
 		if (glcontext)
 			SDL_GL_MakeCurrent(window, glcontext);
@@ -918,9 +919,9 @@ Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
 	return ORIENTATION_UNKNOWN;
 }
 
-std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) const
+std::vector<Window::DisplayMode> Window::getFullscreenModes(int displayindex) const
 {
-	std::vector<WindowSize> sizes;
+	std::vector<DisplayMode> sizes;
 
 	int count = 0;
 	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(GetSDLDisplayIDForIndex(displayindex), &count);
@@ -928,7 +929,8 @@ std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) con
 	for (int i = 0; i < count; i++)
 	{
 		// TODO: other mode properties?
-		WindowSize w = {modes[i]->w, modes[i]->h};
+		double refreshrate = (double)modes[i]->refresh_rate_numerator / (double)modes[i]->refresh_rate_denominator;
+		DisplayMode w = {modes[i]->w, modes[i]->h, refreshrate};
 
 		// SDL2's display mode list has multiple entries for modes of the same
 		// size with different bits per pixel, so we need to filter those out.

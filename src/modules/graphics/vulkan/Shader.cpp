@@ -541,7 +541,11 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 		UniformInfo &u = *(uniformit->second);
 
 		u.active = true;
-		u.dataSize = memberSize;
+
+		// get_declared_struct_member_size should be the padded size, which can be larger than
+		// the tightly packed size that external code will use with UniformInfo.
+		u.dataSizeAllocated = memberSize;
+		u.dataSizePacked = getUniformDataSizePacked(u);
 		u.data = localUniformStagingData.data() + offset;
 
 		const auto &valuesit = reflection.localUniformInitializerValues.find(name);
@@ -553,7 +557,7 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 				memcpy(
 					u.data,
 					values.data(),
-					std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
+					std::min(u.dataSizePacked, values.size() * sizeof(LocalUniformValue)));
 
 				uint8 *dst = localUniformData.data() + offset;
 				copyToUniformBuffer(&u, u.data, dst, u.count);
